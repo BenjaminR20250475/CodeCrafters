@@ -14,8 +14,9 @@ exports.createArticle = async (req, res) => {
 
     const article_id = result.insertId;
 
-    // If the type_id selected matches the "biography" type then add attributes unique to biograhpy 
-    if (type_id === 1) {
+    // If the type_id selected matches the "Biography" type then add attributes unique to biograhpy 
+    // ID 1 is Biography in the db
+    if (Number(type_id) === 1) {
       await articleModel.createBiography(
         article_id,
         req.body.born,
@@ -26,12 +27,48 @@ exports.createArticle = async (req, res) => {
       );
     }
 
+    // If the type_id selected matches the "Programming" type then add attributes unique to programming
+    // ID 2 is Programming in the db
+    else if (Number(type_id) === 2) {
+      await articleModel.createProgramming(
+        article_id,
+        req.body.designed_by,
+        req.body.developer
+      );
+    }
+
+    // If the type_id selected matches the "Painting" type then add attributes unique to painting
+    // ID 3 is Programming in the db
+    else if (Number(type_id) === 3) {
+      await articleModel.createPainting(
+        article_id,
+        req.body.medium,
+        req.body.dimensions,
+        req.body.location,
+        req.body.year
+      );
+    }
+
 
     res.status(201).json({
       message: "Article created",
       id: result.insertId,
     });
 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getByCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const articles = await articleModel.getArticlesByCategory(id);
+
+    if(!articles) return res.status(404).json({message: "Category not found"}); // Check that the category exists
+
+    res.json(articles);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
