@@ -2,7 +2,7 @@ import ArticleCard from '../components/ArticleCard'
 import SearchBar from '../components/SearchBar'
 import CategoryFilter from '../components/CategoryFilter'
 
-function Home({ user, articles, search, category, onSearch, onCategory }) {
+function Home({ user, articles, search, category, onSearch, onCategory, loading }) {
   const filtered = articles.filter((article) => {
     const titleMatch = article.title.toLowerCase().includes(search.toLowerCase())
     const categoryMatch = category === 'All' || article.category === category
@@ -14,7 +14,7 @@ function Home({ user, articles, search, category, onSearch, onCategory }) {
       <div className="hero-panel">
         <div>
           <h1>Digital Articles for Students</h1>
-          <p>Browse resources by category and search titles to discover learning material.</p>
+          <p>Search by title or choose a category to explore the latest learning resources.</p>
         </div>
       </div>
 
@@ -24,10 +24,15 @@ function Home({ user, articles, search, category, onSearch, onCategory }) {
       </section>
 
       <section className="grid-list">
-        {filtered.length === 0 ? (
+        {loading ? (
           <div className="empty-state">
-            <h2>No articles found</h2>
-            <p>Try a different search or category.</p>
+            <h2>Loading articles…</h2>
+            <p>Please wait while we fetch the latest resources.</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="empty-state">
+            <h2>No articles available</h2>
+            <p>Try another search term or category, or return later when articles are available.</p>
           </div>
         ) : (
           filtered.map((article) => (
