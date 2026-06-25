@@ -1,28 +1,172 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Home from './pages/Home'
+import Login from './pages/Login'
+import TutorDashboard from './pages/TutorDashboard'
+import AdminDashboard from './pages/AdminDashboard'
+import { getArticles, createArticle, updateArticle, deleteArticle } from './services/api'
+import './App.css'
 
+const sampleArticles = [
+  {
+    id: 1,
+    title: 'Exploring Modern Art',
+    content: 'A short introduction to visual ideas for students who are curious about creative expression.',
+    category: 'Art',
+    type: 'Article',
+  },
+  {
+    id: 2,
+    title: 'Algebra Essentials',
+    content: 'Key concepts and examples for solving equations with confidence.',
+    category: 'Mathematics',
+    type: 'Lesson',
+  },
+  {
+    id: 3,
+    title: 'Technology Trends 2026',
+    content: 'An overview of new learning tools and digital opportunities for students.',
+    category: 'Technology',
+    type: 'Article',
+  },
+]
+
+const roleFromUsername = (username) => {
+  const normalized = username.trim().toLowerCase()
+  if (normalized === 'admin') return 'admin'
+  if (normalized === 'tutor') return 'tutor'
+  return 'student'
+}
 
 function App() {
-  const [test, setTest] = useState(null);
-  const [testdb, setTestdb] = useState(null);
+  const [user, setUser] = useState(null)
+  const [articles, setArticles] = useState([])
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('All')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  // Test That we can talk to the backend
   useEffect(() => {
-  fetch("/api/hello")
-  .then(res => res.json())
-  .then(data => setTest(JSON.stringify(data)));
+    const loadArticles = async () => {
+      try {
+        const response = await getArticles()
+        setArticles(response.data)
+      } catch (err) {
+        setError('Backend articles API is unavailable, using sample data.')
+        setArticles(sampleArticles)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Test that we can talk to the DB
-  fetch("/api/test-db")
-  .then(res => res.json())
-  .then(data => setTestdb(JSON.stringify(data)));
-  }, []);
+    loadArticles()
+  }, [])
+
+  const handleLogin = ({ username, password }) => {
+    const role = roleFromUsername(username)
+    setUser({ username, role })
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+  }
+
+  const handleSaveArticle = async (article) => {
+    const articlePayload = {
+      title: article.title,
+      content: article.content,
+      category: article.category,
+      type: article.type,
+    }
+
+    if (article.id) {
+      try {
+        await updateArticle(article.id, articlePayload)
+      } catch (err) {
+        setError('Backend update failed; saved locally for now.')
+      }
+      setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
+      return
+    }
+
+    const nextId = Date.now()
+    const newArticle = { id: nextId, ...articlePayload }
+
+    try {
+      await createArticle(newArticle)
+    } catch (err) {
+      setError('Backend create failed; added locally for now.')
+    }
+
+    setArticles((current) => [newArticle, ...current])
+  }
+
+  const handleDeleteArticle = async (id) => {
+    try {
+      await deleteArticle(id)
+    } catch (err) {
+      setError('Backend delete failed; removed locally for now.')
+    }
+    setArticles((current) => current.filter((article) => article.id !== id))
+  }
 
   return (
-    <div>
-      <h1>Test Connection</h1>
-      <p>Server Response: {test}</p>
-      <p>Database Response {testdb}</p>
-    </div>
+    <Router>
+      <Navbar user={user} onLogout={handleLogout} />
+      {error && <div className="status-banner">{error}</div>}
+      <main className="app-shell">
+        <Routes>
+          <Route
+            path="/"
+            element={user ? <Navigate to="/home" replace /> : <Login onLogin={handleLogin} />}
+          />
+          <Route
+            path="/home"
+            element={
+              user ? (
+                <Home
+                  user={user}
+                  articles={articles}
+                  search={search}
+                  category={category}
+                  onSearch={setSearch}
+                  onCategory={setCategory}
+                />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+          <Route
+            path="/tutor"
+            element={
+              user && (user.role === 'tutor' || user.role === 'admin') ? (
+                <TutorDashboard articles={articles} onSaveArticle={handleSaveArticle} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              user && user.role === 'admin' ? (
+                <AdminDashboard
+                  articles={articles}
+                  onSaveArticle={handleSaveArticle}
+                  onDeleteArticle={handleDeleteArticle}
+                />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+          <Route path="*" element={<Navigate to={user ? '/home' : '/'} replace />} />
+        </Routes>
+      </main>
+      {loading && <div className="loading-overlay">Loading articles…</div>}
+    </Router>
   )
 }
 
