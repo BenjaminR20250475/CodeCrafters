@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const db = require("./dbConnection")
+const articleRoutes = require("./routes/articleRoutes");
 
 const app = express();
 
@@ -29,6 +30,10 @@ app.get("/api/test-db", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Routes
+
+app.use("/api/articles", articleRoutes);
 
 const PORT = process.env.PORT;
 
