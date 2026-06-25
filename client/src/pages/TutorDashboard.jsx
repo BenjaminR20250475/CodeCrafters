@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ArticleCard from '../components/ArticleCard'
 import ArticleForm from '../components/ArticleForm'
 
-function TutorDashboard({ articles, onSaveArticle }) {
+function TutorDashboard({ articles, onSaveArticle, isSaving }) {
   const [editingArticle, setEditingArticle] = useState(null)
   const [showForm, setShowForm] = useState(false)
 
@@ -24,8 +24,8 @@ function TutorDashboard({ articles, onSaveArticle }) {
           <h1>Tutor Dashboard</h1>
           <p>Add or update articles to keep the learning resources current.</p>
         </div>
-        <button className="button button-primary" type="button" onClick={() => setShowForm(true)}>
-          Add Article
+        <button className="button button-primary" type="button" onClick={() => setShowForm(true)} disabled={isSaving}>
+          {isSaving ? 'Please wait…' : 'Add Article'}
         </button>
       </div>
 
@@ -37,6 +37,7 @@ function TutorDashboard({ articles, onSaveArticle }) {
             setShowForm(false)
             setEditingArticle(null)
           }}
+          isSaving={isSaving}
         />
       )}
 

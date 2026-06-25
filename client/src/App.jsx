@@ -21,6 +21,7 @@ function App() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [loading, setLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -51,6 +52,7 @@ function App() {
   }
 
   const handleSaveArticle = async (article) => {
+    setIsSaving(true)
     const articlePayload = {
       title: article.title,
       content: article.content,
@@ -58,35 +60,41 @@ function App() {
       type: article.type,
     }
 
-    if (article.id) {
-      try {
-        await updateArticle(article.id, articlePayload)
-      } catch (err) {
-        setError('Backend update failed; saved locally for now.')
-      }
-      setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
-      return
-    }
-
-    const nextId = Date.now()
-    const newArticle = { id: nextId, ...articlePayload }
-
     try {
-      await createArticle(newArticle)
+      if (article.id) {
+        await updateArticle(article.id, articlePayload)
+        setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
+      } else {
+        const response = await createArticle(articlePayload)
+        // If backend returns created item (with id), prefer that. Otherwise create a local id.
+        const created = response && response.data && response.data.id ? response.data : { id: Date.now(), ...articlePayload }
+        setArticles((current) => [created, ...current])
+      }
     } catch (err) {
-      setError('Backend create failed; added locally for now.')
+      setError('Error saving article. Operation reflected in UI but failed server-side.')
+      if (!article.id) {
+        const nextId = Date.now()
+        const newArticle = { id: nextId, ...articlePayload }
+        setArticles((current) => [newArticle, ...current])
+      } else {
+        setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
+      }
+    } finally {
+      setIsSaving(false)
     }
-
-    setArticles((current) => [newArticle, ...current])
   }
 
   const handleDeleteArticle = async (id) => {
+    setIsSaving(true)
     try {
       await deleteArticle(id)
+      setArticles((current) => current.filter((article) => article.id !== id))
     } catch (err) {
-      setError('Backend delete failed; removed locally for now.')
+      setError('Error deleting article. Removed locally in UI.')
+      setArticles((current) => current.filter((article) => article.id !== id))
+    } finally {
+      setIsSaving(false)
     }
-    setArticles((current) => current.filter((article) => article.id !== id))
   }
 
   return (
@@ -110,6 +118,7 @@ function App() {
                   category={category}
                   onSearch={setSearch}
                   onCategory={setCategory}
+                  loading={loading}
                 />
               ) : (
                 <Navigate to="/" replace />
@@ -120,7 +129,7 @@ function App() {
             path="/tutor"
             element={
               user && (user.role === 'tutor' || user.role === 'admin') ? (
-                <TutorDashboard articles={articles} onSaveArticle={handleSaveArticle} />
+                <TutorDashboard articles={articles} onSaveArticle={handleSaveArticle} isSaving={isSaving} />
               ) : (
                 <Navigate to="/" replace />
               )
@@ -134,6 +143,7 @@ function App() {
                   articles={articles}
                   onSaveArticle={handleSaveArticle}
                   onDeleteArticle={handleDeleteArticle}
+                  isSaving={isSaving}
                 />
               ) : (
                 <Navigate to="/" replace />

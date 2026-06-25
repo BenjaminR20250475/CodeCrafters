@@ -1,28 +1,28 @@
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 function Navbar({ user, onLogout }) {
   return (
     <header className="topbar">
       <div className="brand">
-        <Link to="/home">CodeCrafters</Link>
+        <NavLink to="/home" className="brand-link">CodeCrafters</NavLink>
       </div>
 
       <nav className="nav-links">
-        <Link to="/home">Home</Link>
-        {user?.role === 'tutor' && <Link to="/tutor">Tutor panel</Link>}
-        {user?.role === 'admin' && <Link to="/admin">Admin panel</Link>}
+        <NavLink to="/home" className={({isActive}) => isActive ? 'active' : ''}>Home</NavLink>
+        {user?.role === 'tutor' && <NavLink to="/tutor" className={({isActive}) => isActive ? 'active' : ''}>Tutor</NavLink>}
+        {user?.role === 'admin' && <NavLink to="/admin" className={({isActive}) => isActive ? 'active' : ''}>Admin</NavLink>}
       </nav>
 
       <div className="user-actions">
         {user ? (
           <>
-            <span className="user-role">{user.role}</span>
+            <span className="user-role">{user.username} ({user.role})</span>
             <button type="button" className="button button-secondary" onClick={onLogout}>
               Logout
             </button>
           </>
         ) : (
-          <Link to="/">Login</Link>
+          <NavLink to="/">Login</NavLink>
         )}
       </div>
     </header>

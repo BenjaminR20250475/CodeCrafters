@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ArticleCard from '../components/ArticleCard'
 import ArticleForm from '../components/ArticleForm'
 
-function AdminDashboard({ articles, onSaveArticle, onDeleteArticle }) {
+function AdminDashboard({ articles, onSaveArticle, onDeleteArticle, isSaving }) {
   const [editingArticle, setEditingArticle] = useState(null)
   const [showForm, setShowForm] = useState(false)
 
@@ -24,8 +24,8 @@ function AdminDashboard({ articles, onSaveArticle, onDeleteArticle }) {
           <h1>Admin Dashboard</h1>
           <p>Manage the full article library with add, edit, and delete controls.</p>
         </div>
-        <button className="button button-primary" type="button" onClick={() => setShowForm(true)}>
-          Add Article
+        <button className="button button-primary" type="button" onClick={() => setShowForm(true)} disabled={isSaving}>
+          {isSaving ? 'Please wait…' : 'Add Article'}
         </button>
       </div>
 
@@ -37,6 +37,7 @@ function AdminDashboard({ articles, onSaveArticle, onDeleteArticle }) {
             setShowForm(false)
             setEditingArticle(null)
           }}
+          isSaving={isSaving}
         />
       )}
 
