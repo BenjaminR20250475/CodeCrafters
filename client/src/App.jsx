@@ -8,30 +8,6 @@ import AdminDashboard from './pages/AdminDashboard'
 import { getArticles, createArticle, updateArticle, deleteArticle } from './services/api'
 import './App.css'
 
-const sampleArticles = [
-  {
-    id: 1,
-    title: 'Exploring Modern Art',
-    content: 'A short introduction to visual ideas for students who are curious about creative expression.',
-    category: 'Art',
-    type: 'Article',
-  },
-  {
-    id: 2,
-    title: 'Algebra Essentials',
-    content: 'Key concepts and examples for solving equations with confidence.',
-    category: 'Mathematics',
-    type: 'Lesson',
-  },
-  {
-    id: 3,
-    title: 'Technology Trends 2026',
-    content: 'An overview of new learning tools and digital opportunities for students.',
-    category: 'Technology',
-    type: 'Article',
-  },
-]
-
 const roleFromUsername = (username) => {
   const normalized = username.trim().toLowerCase()
   if (normalized === 'admin') return 'admin'
@@ -51,10 +27,12 @@ function App() {
     const loadArticles = async () => {
       try {
         const response = await getArticles()
-        setArticles(response.data)
+        // Expecting the backend to return an array of articles at /api/articles
+        setArticles(Array.isArray(response.data) ? response.data : [])
       } catch (err) {
-        setError('Backend articles API is unavailable, using sample data.')
-        setArticles(sampleArticles)
+        // Keep UI functional but do not inject mock data; show a helpful message
+        setError('Articles API unavailable — no articles to display right now.')
+        setArticles([])
       } finally {
         setLoading(false)
       }

@@ -1,4 +1,6 @@
 function ArticleCard({ article, onEdit, onDelete, canEdit, canDelete }) {
+  const snippet = article.content && article.content.length > 220 ? `${article.content.slice(0, 220)}...` : article.content
+
   return (
     <article className="card">
       <div className="card-header">
@@ -11,7 +13,7 @@ function ArticleCard({ article, onEdit, onDelete, canEdit, canDelete }) {
         </div>
       </div>
 
-      <p className="card-text">{article.content}</p>
+      <p className="card-text">{snippet}</p>
 
       {(canEdit || canDelete) && (
         <div className="card-actions">
