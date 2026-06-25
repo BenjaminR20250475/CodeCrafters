@@ -21,6 +21,37 @@ exports.createBiography = async (biography_id, born, died, nationality, known_fo
   return result;
 };
 
+// Create specific programming attributes
+exports.createProgramming = async (programming_id, designed_by, developer) => {
+  const [result] = await db.query(
+    "INSERT INTO programming (programming_id, designed_by, developer) VALUES (?, ?, ?)",
+    [programming_id, designed_by, developer]
+  );
+  return result;
+};
+
+// Browse by Category
+exports.getArticlesByCategory = async (category_id) => {
+  const [rows] = await db.query(
+    `SELECT *
+     FROM article
+     WHERE category_id = ?
+     AND deleted_date IS NULL`, // Don't show deleted artciles
+    [category_id]
+  );
+
+  return rows;
+};
+
+// Create specific painting attributes
+exports.createPainting = async (painting_id, medium, dimensions, location, year) => {
+  const [result] = await db.query(
+    "INSERT INTO painting (painting_id, medium, dimensions, location, year) VALUES (?, ?, ?, ?, ?)",
+    [painting_id, medium, dimensions, location, year]
+  );
+  return result;
+};
+
 // Soft delete an article
 exports.deleteArticle = async (article_id, deleted_by, deleted_date) => {
   const [result] = await db.query(
