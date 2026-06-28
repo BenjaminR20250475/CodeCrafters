@@ -1,10 +1,15 @@
-
-
 require("dotenv").config();
+const categoryRoutes = require("./routes/categoryRoutes");
+const typeRoutes = require("./routes/typeRoutes");
 const express = require("express");
 const cors = require("cors");
 const db = require("./dbConnection")
 const articleRoutes = require("./routes/articleRoutes");
+console.log(process.env);
+console.log("host =", process.env.host);
+console.log("user =", process.env.user);
+console.log("password =", process.env.password);
+console.log("database =", process.env.database);
 
 const app = express();
 
@@ -34,6 +39,8 @@ app.get("/api/test-db", async (req, res) => {
 // Routes
 
 app.use("/api/articles", articleRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/types", typeRoutes);
 
 const PORT = process.env.PORT;
 
