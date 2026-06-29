@@ -5,8 +5,11 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import TutorDashboard from './pages/TutorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
-import { getArticles, createArticle, updateArticle, deleteArticle } from './services/api'
+import { getArticlesByCategory, searchArticles, createArticle, updateArticle, deleteArticle } from './services/api'
 import './App.css'
+
+const categoryMap = { 'Arts': 1, 'Mathematics': 2, 'Technology': 3 }
+const typeMap = { 'Biography': 1, 'Programming': 2, 'Painting': 3, 'Theorem': 4, 'Algorithm': 5 }
 
 const roleFromUsername = (username) => {
   const normalized = username.trim().toLowerCase()
@@ -27,11 +30,24 @@ function App() {
   useEffect(() => {
     const loadArticles = async () => {
       try {
-        const response = await getArticles()
-        // Expecting the backend to return an array of articles at /api/articles
+        let response
+        if (search.trim()) {
+          response = await searchArticles(search)
+        } else if (category !== 'All') {
+          const categoryId = categoryMap[category]
+          response = await getArticlesByCategory(categoryId)
+        } else {
+          // Load all categories
+          const art = await getArticlesByCategory(1)
+          const math = await getArticlesByCategory(2)
+          const tech = await getArticlesByCategory(3)
+          response = {
+            data: [...(art.data || []), ...(math.data || []), ...(tech.data || [])]
+          }
+        }
         setArticles(Array.isArray(response.data) ? response.data : [])
+        setError('')
       } catch (err) {
-        // Keep UI functional but do not inject mock data; show a helpful message
         setError('Articles API unavailable — no articles to display right now.')
         setArticles([])
       } finally {
@@ -40,7 +56,7 @@ function App() {
     }
 
     loadArticles()
-  }, [])
+  }, [category, search])
 
   const handleLogin = ({ username, password }) => {
     const role = roleFromUsername(username)
@@ -53,11 +69,16 @@ function App() {
 
   const handleSaveArticle = async (article) => {
     setIsSaving(true)
+    const categoryId = categoryMap[article.category] || 1
+    const typeId = typeMap[article.type] || 1
+    
     const articlePayload = {
-      title: article.title,
-      content: article.content,
-      category: article.category,
-      type: article.type,
+      category_id: categoryId,
+      type_id: typeId,
+      name: article.title,
+      about: article.content,
+      created_by: user?.username || 'user',
+      modified_by: user?.username || 'user'
     }
 
     try {
@@ -66,15 +87,14 @@ function App() {
         setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
       } else {
         const response = await createArticle(articlePayload)
-        // If backend returns created item (with id), prefer that. Otherwise create a local id.
-        const created = response && response.data && response.data.id ? response.data : { id: Date.now(), ...articlePayload }
+        const created = response?.data?.id ? { id: response.data.id, ...article } : { id: Date.now(), ...article }
         setArticles((current) => [created, ...current])
       }
     } catch (err) {
       setError('Error saving article. Operation reflected in UI but failed server-side.')
       if (!article.id) {
         const nextId = Date.now()
-        const newArticle = { id: nextId, ...articlePayload }
+        const newArticle = { id: nextId, ...article }
         setArticles((current) => [newArticle, ...current])
       } else {
         setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
@@ -87,7 +107,7 @@ function App() {
   const handleDeleteArticle = async (id) => {
     setIsSaving(true)
     try {
-      await deleteArticle(id)
+      await deleteArticle(id, { deleted_by: user?.username || 'user' })
       setArticles((current) => current.filter((article) => article.id !== id))
     } catch (err) {
       setError('Error deleting article. Removed locally in UI.')

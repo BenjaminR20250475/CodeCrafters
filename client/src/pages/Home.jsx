@@ -5,8 +5,7 @@ import CategoryFilter from '../components/CategoryFilter'
 function Home({ user, articles, search, category, onSearch, onCategory, loading }) {
   const filtered = articles.filter((article) => {
     const titleMatch = article.title.toLowerCase().includes(search.toLowerCase())
-    const categoryMatch = category === 'All' || article.category === category
-    return titleMatch && categoryMatch
+    return titleMatch
   })
 
   return (
@@ -20,7 +19,7 @@ function Home({ user, articles, search, category, onSearch, onCategory, loading 
 
       <section className="home-controls">
         <SearchBar value={search} onChange={onSearch} />
-        <CategoryFilter categories={['All', 'Art', 'Mathematics', 'Technology']} selected={category} onSelect={onCategory} />
+        <CategoryFilter categories={['All', 'Arts', 'Mathematics', 'Technology']} selected={category} onSelect={onCategory} />
       </section>
 
       <section className="grid-list">
