@@ -2,7 +2,7 @@ import ArticleCard from '../components/ArticleCard'
 import SearchBar from '../components/SearchBar'
 import CategoryFilter from '../components/CategoryFilter'
 
-function Home({ user, articles, search, category, onSearch, onCategory, loading }) {
+function Home({ user, articles, search, category, onSearch, onCategory, loading, onOpenArticle }) {
   const filtered = articles.filter((article) => {
     const titleMatch = article.title.toLowerCase().includes(search.toLowerCase())
     return titleMatch
@@ -35,7 +35,7 @@ function Home({ user, articles, search, category, onSearch, onCategory, loading 
           </div>
         ) : (
           filtered.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard key={article.id} article={article} onOpenArticle={onOpenArticle} />
           ))
         )}
       </section>
