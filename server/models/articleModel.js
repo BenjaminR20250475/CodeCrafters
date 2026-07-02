@@ -30,19 +30,6 @@ exports.createProgramming = async (programming_id, designed_by, developer) => {
   return result;
 };
 
-// Browse by Category
-exports.getArticlesByCategory = async (category_id) => {
-  const [rows] = await db.query(
-    `SELECT *
-     FROM article
-     WHERE category_id = ?
-     AND deleted_date IS NULL`, // Don't show deleted artciles
-    [category_id]
-  );
-
-  return rows;
-};
-
 // Create specific painting attributes
 exports.createPainting = async (painting_id, medium, dimensions, location, year) => {
   const [result] = await db.query(
@@ -52,6 +39,28 @@ exports.createPainting = async (painting_id, medium, dimensions, location, year)
   return result;
 };
 
+// Browse by Category
+exports.browseByCategory = async (category_id) => {
+  const [rows] = await db.query(
+    `SELECT * FROM article WHERE category_id = ? 
+    AND deleted_date IS NULL`, // Don't show deleted articles
+    [category_id]
+  );
+
+  return rows;
+};
+
+exports.browseByKeyword = async (keyword) => {
+  const [rows] = await db.query(
+    `SELECT * FROM article WHERE name LIKE ?
+     AND deleted_date IS NULL`, // Don't show deleted articles
+    [`%${keyword}%`]
+  );
+
+  return rows;
+};
+
+
 // Soft delete an article
 exports.deleteArticle = async (article_id, deleted_by, deleted_date) => {
   const [result] = await db.query(
@@ -60,4 +69,58 @@ exports.deleteArticle = async (article_id, deleted_by, deleted_date) => {
   );
   
   return result;
+};
+
+// Update an article
+exports.updateArticle = async (article_id, category_id, name, about, modified_by, modified_date) => {
+
+  const [result] = await db.query(
+    `UPDATE article SET category_id = ?, name = ?, about = ?, modified_by = ?, modified_date = ? WHERE article_id = ?`,
+    [category_id, name, about, modified_by, modified_date, article_id]
+  );
+
+  return result;
+};
+
+// Update specific biography attributes
+exports.updateBiography = async (biography_id, born, died, nationality, known_for, notable_works) => {
+
+  const [result] = await db.query(
+    `UPDATE biography SET born = ?, died = ?, nationality = ?, known_for = ?, notable_works = ? WHERE biography_id = ?`,
+    [born, died, nationality, known_for, notable_works, biography_id]
+  );
+
+  return result;
+};
+
+// Update specific programming attributes
+exports.updateProgramming = async (programming_id, designed_by, developer) => {
+
+  const [result] = await db.query(
+    `UPDATE programming SET designed_by = ?, developer = ? WHERE programming_id = ?`,
+    [designed_by, developer, programming_id]
+  );
+
+  return result;
+};
+
+// Update specific painting attributes
+exports.updatePainting = async (painting_id, medium, dimensions, location, year) => {
+
+  const [result] = await db.query(
+    `UPDATE painting SET medium = ?, dimensions = ?, location = ?, year = ? WHERE painting_id = ?`,
+    [medium, dimensions, location, year, painting_id]
+  );
+
+  return result;
+};
+
+// Get article by ID
+exports.getArticleById = async (article_id) => {
+  const [rows] = await db.query(
+    `SELECT * FROM article WHERE article_id = ?`,
+    [article_id]
+  );
+
+  return rows[0];
 };

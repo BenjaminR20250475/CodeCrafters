@@ -5,11 +5,8 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./dbConnection")
 const articleRoutes = require("./routes/articleRoutes");
-console.log(process.env);
-console.log("host =", process.env.host);
-console.log("user =", process.env.user);
-console.log("password =", process.env.password);
-console.log("database =", process.env.database);
+const userRoutes = require("./routes/userRoutes");
+const roleRoutes = require("./routes/roleRoutes");
 
 const app = express();
 
@@ -41,6 +38,8 @@ app.get("/api/test-db", async (req, res) => {
 app.use("/api/articles", articleRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/types", typeRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/roles", roleRoutes);
 
 const PORT = process.env.PORT;
 
