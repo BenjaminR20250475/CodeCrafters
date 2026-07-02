@@ -5,6 +5,15 @@ const api = axios.create({
   timeout: 5000,
 })
 
+// Add JWT token to all requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 // Category ID mapping
 const categoryMap = { 'Arts': 1, 'Mathematics': 2, 'Technology': 3 }
 const categoryNameMap = { 1: 'Arts', 2: 'Mathematics', 3: 'Technology' }
@@ -22,6 +31,9 @@ const transformArticle = (data) => ({
   type: typeNameMap[data.type_id] || 'Biography',
   ...data
 })
+
+export const loginUser = (email, password) =>
+  api.post('/users/login', { email, password })
 
 export const getArticlesByCategory = (categoryId) =>
   api.get(`/articles/category/${categoryId}`).then(res => ({

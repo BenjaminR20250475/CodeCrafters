@@ -59,12 +59,12 @@ function App() {
     loadArticles()
   }, [category, search])
 
-  const handleLogin = ({ username, password }) => {
-    const role = roleFromUsername(username)
-    setUser({ username, role })
+  const handleLogin = (user) => {
+    setUser(user)
   }
 
   const handleLogout = () => {
+    localStorage.removeItem('token')
     setUser(null)
   }
 
