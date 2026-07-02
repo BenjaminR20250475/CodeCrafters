@@ -46,3 +46,4 @@ const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });
+console.log("JWT Secret Key is:", process.env.JWT_SECRET);
