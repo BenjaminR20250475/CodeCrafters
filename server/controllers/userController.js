@@ -1,15 +1,32 @@
+
+const bcrypt = require('bcryptjs');
 const userModel = require("../models/userModel");
+
 
 // Create a user
 exports.createUser = async (req, res) => {
   try {
+
     const { role_id, name, email, password } = req.body;
+
+    // Check if the email already exists
+    const existingUser = await userModel.getUserByEmail(email);
+
+    if (existingUser) {
+      return res.status(409).json({
+      message: "Email already exists"
+      });
+    };
+
+
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await userModel.createUser(
       role_id,
       name,
       email,
-      password
+      hashedPassword
     );
 
     res.status(201).json({

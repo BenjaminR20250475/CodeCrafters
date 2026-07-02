@@ -19,3 +19,13 @@ exports.deleteUser = async (user_id) => {
 
   return result;
 };
+
+// Get user by email
+exports.getUserByEmail = async (email) => {
+  const [rows] = await db.query(
+    "SELECT * FROM user WHERE email = ?",
+    [email]
+  );
+
+  return rows[0];
+};
