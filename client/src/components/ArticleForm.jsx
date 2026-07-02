@@ -26,6 +26,7 @@ function ArticleForm({ initialArticle = null, onSave, onCancel, isSaving = false
     if (initialArticle) {
       setFormData({
         ...defaultForm,
+        id: initialArticle.id,
         title: initialArticle.title || '',
         content: initialArticle.content || '',
         category: initialArticle.category || 'Arts',
