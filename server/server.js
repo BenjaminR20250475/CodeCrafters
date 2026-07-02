@@ -1,10 +1,12 @@
-
-
 require("dotenv").config();
+const categoryRoutes = require("./routes/categoryRoutes");
+const typeRoutes = require("./routes/typeRoutes");
 const express = require("express");
 const cors = require("cors");
 const db = require("./dbConnection")
 const articleRoutes = require("./routes/articleRoutes");
+const userRoutes = require("./routes/userRoutes");
+const roleRoutes = require("./routes/roleRoutes");
 
 const app = express();
 
@@ -34,6 +36,10 @@ app.get("/api/test-db", async (req, res) => {
 // Routes
 
 app.use("/api/articles", articleRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/types", typeRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/roles", roleRoutes);
 
 const PORT = process.env.PORT;
 
