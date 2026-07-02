@@ -3,8 +3,19 @@ import { useState, useEffect } from 'react'
 const defaultForm = {
   title: '',
   content: '',
-  category: 'Art',
-  type: 'Article',
+  category: 'Arts',
+  type: 'Biography',
+  born: '',
+  died: '',
+  nationality: '',
+  known_for: '',
+  notable_works: '',
+  designed_by: '',
+  developer: '',
+  medium: '',
+  dimensions: '',
+  location: '',
+  year: '',
 }
 
 function ArticleForm({ initialArticle = null, onSave, onCancel, isSaving = false }) {
@@ -13,7 +24,25 @@ function ArticleForm({ initialArticle = null, onSave, onCancel, isSaving = false
 
   useEffect(() => {
     if (initialArticle) {
-      setFormData(initialArticle)
+      setFormData({
+        ...defaultForm,
+        id: initialArticle.id,
+        title: initialArticle.title || '',
+        content: initialArticle.content || '',
+        category: initialArticle.category || 'Arts',
+        type: initialArticle.type || 'Biography',
+        born: initialArticle.born || '',
+        died: initialArticle.died || '',
+        nationality: initialArticle.nationality || '',
+        known_for: initialArticle.known_for || '',
+        notable_works: initialArticle.notable_works || '',
+        designed_by: initialArticle.designed_by || '',
+        developer: initialArticle.developer || '',
+        medium: initialArticle.medium || '',
+        dimensions: initialArticle.dimensions || '',
+        location: initialArticle.location || '',
+        year: initialArticle.year || '',
+      })
     } else {
       setFormData(defaultForm)
     }
@@ -70,7 +99,7 @@ function ArticleForm({ initialArticle = null, onSave, onCancel, isSaving = false
       <label>
         Category
         <select value={formData.category} onChange={(event) => handleChange('category', event.target.value)}>
-          <option value="Art">Art</option>
+          <option value="Arts">Arts</option>
           <option value="Mathematics">Mathematics</option>
           <option value="Technology">Technology</option>
         </select>
@@ -79,10 +108,116 @@ function ArticleForm({ initialArticle = null, onSave, onCancel, isSaving = false
       <label>
         Type
         <select value={formData.type} onChange={(event) => handleChange('type', event.target.value)}>
-          <option value="Article">Article</option>
-          <option value="Lesson">Lesson</option>
+          <option value="Biography">Biography</option>
+          <option value="Programming">Programming</option>
+          <option value="Painting">Painting</option>
+          <option value="Theorem">Theorem</option>
+          <option value="Algorithm">Algorithm</option>
         </select>
       </label>
+
+      {formData.type === 'Biography' && (
+        <>
+          <label>
+            Born
+            <input
+              value={formData.born}
+              onChange={(event) => handleChange('born', event.target.value)}
+              placeholder="Birth date or location"
+            />
+          </label>
+          <label>
+            Died
+            <input
+              value={formData.died}
+              onChange={(event) => handleChange('died', event.target.value)}
+              placeholder="Death date or location"
+            />
+          </label>
+          <label>
+            Nationality
+            <input
+              value={formData.nationality}
+              onChange={(event) => handleChange('nationality', event.target.value)}
+              placeholder="Nationality"
+            />
+          </label>
+          <label>
+            Known For
+            <input
+              value={formData.known_for}
+              onChange={(event) => handleChange('known_for', event.target.value)}
+              placeholder="Known for what"
+            />
+          </label>
+          <label>
+            Notable Works
+            <input
+              value={formData.notable_works}
+              onChange={(event) => handleChange('notable_works', event.target.value)}
+              placeholder="Notable works"
+            />
+          </label>
+        </>
+      )}
+
+      {formData.type === 'Programming' && (
+        <>
+          <label>
+            Designed By
+            <input
+              value={formData.designed_by}
+              onChange={(event) => handleChange('designed_by', event.target.value)}
+              placeholder="Designed by"
+            />
+          </label>
+          <label>
+            Developer
+            <input
+              value={formData.developer}
+              onChange={(event) => handleChange('developer', event.target.value)}
+              placeholder="Developer"
+            />
+          </label>
+        </>
+      )}
+
+      {formData.type === 'Painting' && (
+        <>
+          <label>
+            Medium
+            <input
+              value={formData.medium}
+              onChange={(event) => handleChange('medium', event.target.value)}
+              placeholder="Medium (e.g., oil on canvas)"
+            />
+          </label>
+          <label>
+            Dimensions
+            <input
+              value={formData.dimensions}
+              onChange={(event) => handleChange('dimensions', event.target.value)}
+              placeholder="Dimensions"
+            />
+          </label>
+          <label>
+            Location
+            <input
+              value={formData.location}
+              onChange={(event) => handleChange('location', event.target.value)}
+              placeholder="Current location"
+            />
+          </label>
+          <label>
+            Year
+            <input
+              value={formData.year}
+              onChange={(event) => handleChange('year', event.target.value)}
+              placeholder="Year created"
+            />
+          </label>
+        </>
+      )}
 
       <div className="form-actions">
         <button type="submit" className="button button-primary" disabled={isDisabled}>

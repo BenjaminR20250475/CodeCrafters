@@ -5,8 +5,11 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import TutorDashboard from './pages/TutorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
-import { getArticles, createArticle, updateArticle, deleteArticle } from './services/api'
+import { getArticlesByCategory, searchArticles, createArticle, updateArticle, deleteArticle } from './services/api'
 import './App.css'
+
+const categoryMap = { 'Arts': 1, 'Mathematics': 2, 'Technology': 3 }
+const typeMap = { 'Biography': 1, 'Programming': 2, 'Painting': 3, 'Theorem': 4, 'Algorithm': 5 }
 
 const roleFromUsername = (username) => {
   const normalized = username.trim().toLowerCase()
@@ -23,15 +26,29 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
+  const [selectedArticle, setSelectedArticle] = useState(null)
 
   useEffect(() => {
     const loadArticles = async () => {
       try {
-        const response = await getArticles()
-        // Expecting the backend to return an array of articles at /api/articles
+        let response
+        if (search.trim()) {
+          response = await searchArticles(search)
+        } else if (category !== 'All') {
+          const categoryId = categoryMap[category]
+          response = await getArticlesByCategory(categoryId)
+        } else {
+          // Load all categories
+          const art = await getArticlesByCategory(1)
+          const math = await getArticlesByCategory(2)
+          const tech = await getArticlesByCategory(3)
+          response = {
+            data: [...(art.data || []), ...(math.data || []), ...(tech.data || [])]
+          }
+        }
         setArticles(Array.isArray(response.data) ? response.data : [])
+        setError('')
       } catch (err) {
-        // Keep UI functional but do not inject mock data; show a helpful message
         setError('Articles API unavailable — no articles to display right now.')
         setArticles([])
       } finally {
@@ -40,7 +57,7 @@ function App() {
     }
 
     loadArticles()
-  }, [])
+  }, [category, search])
 
   const handleLogin = ({ username, password }) => {
     const role = roleFromUsername(username)
@@ -53,11 +70,36 @@ function App() {
 
   const handleSaveArticle = async (article) => {
     setIsSaving(true)
+    const categoryId = categoryMap[article.category] || 1
+    const typeId = typeMap[article.type] || 1
+
     const articlePayload = {
-      title: article.title,
-      content: article.content,
-      category: article.category,
-      type: article.type,
+      category_id: categoryId,
+      type_id: typeId,
+      name: article.title,
+      about: article.content,
+      created_by: 1,
+      modified_by: 1
+    }
+
+    if (typeId === 1) {
+      articlePayload.born = article.born || ''
+      articlePayload.died = article.died || ''
+      articlePayload.nationality = article.nationality || ''
+      articlePayload.known_for = article.known_for || ''
+      articlePayload.notable_works = article.notable_works || ''
+    }
+
+    if (typeId === 2) {
+      articlePayload.designed_by = article.designed_by || ''
+      articlePayload.developer = article.developer || ''
+    }
+
+    if (typeId === 3) {
+      articlePayload.medium = article.medium || ''
+      articlePayload.dimensions = article.dimensions || ''
+      articlePayload.location = article.location || ''
+      articlePayload.year = article.year || ''
     }
 
     try {
@@ -66,15 +108,14 @@ function App() {
         setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
       } else {
         const response = await createArticle(articlePayload)
-        // If backend returns created item (with id), prefer that. Otherwise create a local id.
-        const created = response && response.data && response.data.id ? response.data : { id: Date.now(), ...articlePayload }
+        const created = response?.data?.id ? { id: response.data.id, ...article } : { id: Date.now(), ...article }
         setArticles((current) => [created, ...current])
       }
     } catch (err) {
       setError('Error saving article. Operation reflected in UI but failed server-side.')
       if (!article.id) {
         const nextId = Date.now()
-        const newArticle = { id: nextId, ...articlePayload }
+        const newArticle = { id: nextId, ...article }
         setArticles((current) => [newArticle, ...current])
       } else {
         setArticles((current) => current.map((item) => (item.id === article.id ? article : item)))
@@ -87,14 +128,21 @@ function App() {
   const handleDeleteArticle = async (id) => {
     setIsSaving(true)
     try {
-      await deleteArticle(id)
+      await deleteArticle(id, { deleted_by: 1 })
       setArticles((current) => current.filter((article) => article.id !== id))
     } catch (err) {
-      setError('Error deleting article. Removed locally in UI.')
-      setArticles((current) => current.filter((article) => article.id !== id))
+      setError('Error deleting article. Please try again.')
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleOpenArticle = (article) => {
+    setSelectedArticle(article)
+  }
+
+  const handleCloseArticle = () => {
+    setSelectedArticle(null)
   }
 
   return (
@@ -119,6 +167,7 @@ function App() {
                   onSearch={setSearch}
                   onCategory={setCategory}
                   loading={loading}
+                  onOpenArticle={handleOpenArticle}
                 />
               ) : (
                 <Navigate to="/" replace />
@@ -129,7 +178,7 @@ function App() {
             path="/tutor"
             element={
               user && (user.role === 'tutor' || user.role === 'admin') ? (
-                <TutorDashboard articles={articles} onSaveArticle={handleSaveArticle} isSaving={isSaving} />
+                <TutorDashboard articles={articles} onSaveArticle={handleSaveArticle} isSaving={isSaving} onOpenArticle={handleOpenArticle} />
               ) : (
                 <Navigate to="/" replace />
               )
@@ -144,6 +193,7 @@ function App() {
                   onSaveArticle={handleSaveArticle}
                   onDeleteArticle={handleDeleteArticle}
                   isSaving={isSaving}
+                  onOpenArticle={handleOpenArticle}
                 />
               ) : (
                 <Navigate to="/" replace />
@@ -153,6 +203,25 @@ function App() {
           <Route path="*" element={<Navigate to={user ? '/home' : '/'} replace />} />
         </Routes>
       </main>
+      {selectedArticle && (
+        <div
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000 }}
+          onClick={handleCloseArticle}
+        >
+          <div
+            style={{ backgroundColor: '#fff', padding: '20px', width: '100%', maxWidth: '500px', border: '1px solid #d1d5db' }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3>{selectedArticle.title}</h3>
+            <p><strong>Category:</strong> {selectedArticle.category}</p>
+            <p><strong>Type:</strong> {selectedArticle.type}</p>
+            <p>{selectedArticle.content}</p>
+            <button className="button button-secondary" type="button" onClick={handleCloseArticle}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       {loading && <div className="loading-overlay">Loading articles…</div>}
     </Router>
   )

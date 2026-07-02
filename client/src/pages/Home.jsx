@@ -2,11 +2,10 @@ import ArticleCard from '../components/ArticleCard'
 import SearchBar from '../components/SearchBar'
 import CategoryFilter from '../components/CategoryFilter'
 
-function Home({ user, articles, search, category, onSearch, onCategory, loading }) {
+function Home({ user, articles, search, category, onSearch, onCategory, loading, onOpenArticle }) {
   const filtered = articles.filter((article) => {
     const titleMatch = article.title.toLowerCase().includes(search.toLowerCase())
-    const categoryMatch = category === 'All' || article.category === category
-    return titleMatch && categoryMatch
+    return titleMatch
   })
 
   return (
@@ -20,7 +19,7 @@ function Home({ user, articles, search, category, onSearch, onCategory, loading 
 
       <section className="home-controls">
         <SearchBar value={search} onChange={onSearch} />
-        <CategoryFilter categories={['All', 'Art', 'Mathematics', 'Technology']} selected={category} onSelect={onCategory} />
+        <CategoryFilter categories={['All', 'Arts', 'Mathematics', 'Technology']} selected={category} onSelect={onCategory} />
       </section>
 
       <section className="grid-list">
@@ -36,7 +35,7 @@ function Home({ user, articles, search, category, onSearch, onCategory, loading 
           </div>
         ) : (
           filtered.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard key={article.id} article={article} onOpenArticle={onOpenArticle} />
           ))
         )}
       </section>

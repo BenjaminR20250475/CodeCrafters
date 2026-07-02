@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ArticleCard from '../components/ArticleCard'
 import ArticleForm from '../components/ArticleForm'
 
-function AdminDashboard({ articles, onSaveArticle, onDeleteArticle, isSaving }) {
+function AdminDashboard({ articles, onSaveArticle, onDeleteArticle, isSaving, onOpenArticle }) {
   const [editingArticle, setEditingArticle] = useState(null)
   const [showForm, setShowForm] = useState(false)
 
@@ -50,6 +50,7 @@ function AdminDashboard({ articles, onSaveArticle, onDeleteArticle, isSaving }) 
             canDelete
             onEdit={handleEdit}
             onDelete={onDeleteArticle}
+            onOpenArticle={onOpenArticle}
           />
         ))}
       </section>
