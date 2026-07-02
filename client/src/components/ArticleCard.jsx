@@ -1,8 +1,6 @@
-function ArticleCard({ article, onEdit, onDelete, canEdit, canDelete }) {
-  const snippet = article.content && article.content.length > 220 ? `${article.content.slice(0, 220)}...` : article.content
-
+function ArticleCard({ article, onEdit, onDelete, canEdit, canDelete, onOpenArticle }) {
   return (
-    <article className="card">
+    <article className="card" onClick={() => onOpenArticle && onOpenArticle(article)}>
       <div className="card-header">
         <div>
           <h3>{article.title}</h3>
@@ -13,17 +11,15 @@ function ArticleCard({ article, onEdit, onDelete, canEdit, canDelete }) {
         </div>
       </div>
 
-      <p className="card-text">{snippet}</p>
-
       {(canEdit || canDelete) && (
         <div className="card-actions">
           {canEdit && (
-            <button className="button button-primary" type="button" onClick={() => onEdit(article)}>
+            <button className="button button-primary" type="button" onClick={(event) => { event.stopPropagation(); onEdit(article) }}>
               Edit
             </button>
           )}
           {canDelete && (
-            <button className="button button-danger" type="button" onClick={() => onDelete(article.id)}>
+            <button className="button button-danger" type="button" onClick={(event) => { event.stopPropagation(); onDelete(article.id) }}>
               Delete
             </button>
           )}

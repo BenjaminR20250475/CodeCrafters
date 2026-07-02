@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ArticleCard from '../components/ArticleCard'
 import ArticleForm from '../components/ArticleForm'
 
-function TutorDashboard({ articles, onSaveArticle, isSaving }) {
+function TutorDashboard({ articles, onSaveArticle, isSaving, onOpenArticle }) {
   const [editingArticle, setEditingArticle] = useState(null)
   const [showForm, setShowForm] = useState(false)
 
@@ -48,6 +48,7 @@ function TutorDashboard({ articles, onSaveArticle, isSaving }) {
             article={article}
             canEdit
             onEdit={handleEdit}
+            onOpenArticle={onOpenArticle}
           />
         ))}
       </section>
