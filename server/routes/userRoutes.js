@@ -6,8 +6,8 @@ const authController = require("../controllers/authController");
 const role = require("../middleware/requireRole");
 const auth = require("../middleware/tokenAuth");
 
-router.post("/", auth, role(3), userController.createUser);
-router.delete("/:id", auth, role(3), userController.deleteUser);
+router.post("/", userController.createUser);
+router.delete("/:id", userController.deleteUser);
 router.post("/login", authController.login);
 
 module.exports = router;
