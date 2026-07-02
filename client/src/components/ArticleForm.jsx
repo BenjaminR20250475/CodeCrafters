@@ -107,7 +107,7 @@ function ArticleForm({ initialArticle = null, onSave, onCancel, isSaving = false
 
       <label>
         Type
-        <select value={formData.type} onChange={(event) => handleChange('type', event.target.value)}>
+        <select value={formData.type} onChange={(event) => handleChange('type', event.target.value)} disabled={initialArticle !== null}>
           <option value="Biography">Biography</option>
           <option value="Programming">Programming</option>
           <option value="Painting">Painting</option>
